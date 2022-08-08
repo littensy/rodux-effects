@@ -1,0 +1,32 @@
+{
+	"compilerOptions": {
+		// required
+		"allowSyntheticDefaultImports": true,
+		"downlevelIteration": true,
+		"noLib": true,
+		"strict": true,
+		"module": "CommonJS",
+		"target": "ESNext",
+		"moduleResolution": "Node",
+		"typeRoots": [
+			"../node_modules/@rbxts"
+		],
+		"removeComments": true,
+		"rootDirs": [
+			"server",
+			"../src",
+		],
+		"outDir": "build",
+		"baseUrl": ".",
+		"paths": {
+			"@rbxts/rodux-effects": ["../src"],
+			"@rbxts/rodux-effects/*": ["../src/*"]
+		},
+		"jsx": "react",
+		"jsxFactory": "Roact.createElement",
+	},
+	"include": [
+		"**/*",
+		"../src/**/*"
+	]
+}

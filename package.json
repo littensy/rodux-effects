@@ -1,0 +1,38 @@
+{
+  "name": "@rbxts/rodux-effects",
+  "version": "0.1.0",
+  "description": "Lightweight side-effect library for Rodux",
+  "main": "out/init.lua",
+  "scripts": {
+    "watch": "rbxtsc -w -p example/tsconfig.json --type=game",
+    "serve": "rojo serve example/default.project.json"
+  },
+  "keywords": [],
+  "author": "littensy",
+  "license": "MIT",
+  "repository": "github:littensy/rodux-effects",
+  "bugs": "https://github.com/littensy/rodux-effects/issues",
+  "types": "out/index.d.ts",
+  "files": [
+    "out",
+    "!**/*.tsbuildinfo"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@rbxts/compiler-types": "^1.3.3-types.1",
+    "@rbxts/types": "^1.0.633",
+    "@typescript-eslint/eslint-plugin": "^5.33.0",
+    "@typescript-eslint/parser": "^5.33.0",
+    "eslint": "^8.21.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-roblox-ts": "^0.0.34",
+    "prettier": "^2.7.1",
+    "typescript": "^4.7.4"
+  },
+  "peerDependencies": {
+    "@rbxts/rodux": "^3.0.0-ts.3"
+  }
+}
