@@ -2,4 +2,6 @@
 /out
 /include
 /src/test.ts
+/example/build
+/example/include
 *.tsbuildinfo
