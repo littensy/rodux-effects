@@ -110,7 +110,9 @@ local function onUpdate(selector, callback, isImmediate)
 			handle = store.changed:connect(onChange)
 
 			if isImmediate then
-				onChange(store:getState())
+				task.defer(function()
+					onChange(store:getState())
+				end)
 			else
 				lastSelectedState = selector(store:getState())
 			end
