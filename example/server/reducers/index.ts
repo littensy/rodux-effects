@@ -1,6 +1,5 @@
 import Rodux from "@rbxts/rodux";
-import { AlarmAction } from "server/actions/alarm";
-import alarmReducer, { AlarmState } from "./alarm";
+import { AlarmAction, alarmReducer, AlarmState } from "./alarm";
 
 export interface RootState {
 	alarm: AlarmState;

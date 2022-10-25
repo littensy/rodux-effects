@@ -13,9 +13,12 @@
 			"TS": {
 				"$path": "./include",
 				"node_modules": {
-					"$path": "../node_modules/@rbxts",
-					"rodux-effects": {
-						"$path": "build/src"
+					"$className": "Folder",
+					"@rbxts": {
+						"$path": "../node_modules/@rbxts",
+						"rodux-effects": {
+							"$path": "build/src"
+						}
 					}
 				}
 			}

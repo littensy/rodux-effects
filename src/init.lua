@@ -3,16 +3,20 @@ local Promise = TS.Promise
 
 local RunService = game:GetService("RunService")
 
-local watchingActions = {}
+local actionCallbacksByType = {}
+local actionCallbackId = 0
 local currentStore
 
 local function assertStore()
 	if not currentStore then
-		error("@rbxts/rodux-effects: middleware is not initialized, did you call waitForStore()?")
+		error("@rbxts/rodux-effects: store is not initialized, did you call waitForStore() before using an effect?")
 	end
 end
 
 local function bind(store)
+	if currentStore ~= nil then
+		warn("@rbxts/rodux-effects: store is already initialized, did you call bind() twice?")
+	end
 	currentStore = store
 end
 
@@ -22,14 +26,19 @@ local function effectMiddleware(nextDispatch)
 			return nextDispatch(action)
 		end
 
-		for watcher in pairs(watchingActions) do
-			if action.type == watcher.type then
-				task.defer(watcher.callback, action)
+		local callbacks = actionCallbacksByType[action.type]
+		if callbacks then
+			for _, callback in ipairs(callbacks) do
+				task.spawn(callback, action)
 			end
 		end
 
 		return nextDispatch(action)
 	end
+end
+
+local function getStore()
+	return currentStore
 end
 
 local function waitForStore()
@@ -67,40 +76,45 @@ local function destruct()
 	currentStore:destruct()
 end
 
-local function actionEffect(type, callback)
-	local watcher = {
-		type = type,
-		callback = callback,
-	}
+local function onDispatch(type, callback)
+	local callbacks = actionCallbacksByType[type]
 
-	watchingActions[watcher] = true
+	if not callbacks then
+		callbacks = {}
+		actionCallbacksByType[type] = callbacks
+	end
+
+	actionCallbackId += 1
+	callbacks[actionCallbackId] = callback
 
 	return function()
-		watchingActions[watcher] = nil
+		callbacks[actionCallbackId] = nil
 	end
 end
 
-local function stateEffect(selector, callback)
+local function onUpdate(selector, callback, isImmediate)
 	local handle
 	local lastSelectedState
 
-	local function onChange(state)
+	local function onChange(state, force)
 		local selectedState = selector(state)
 
-		if selectedState ~= lastSelectedState then
-			task.defer(callback, selectedState, lastSelectedState)
+		if selectedState ~= lastSelectedState or force then
+			task.spawn(callback, selectedState, lastSelectedState)
+			lastSelectedState = selectedState
 		end
-
-		lastSelectedState = selectedState
 	end
 
 	local promise = waitForStore()
 		:andThen(function(store)
+			lastSelectedState = selector(store:getState())
 			handle = store.changed:connect(onChange)
 
-			task.defer(function()
-				onChange(store:getState())
-			end)
+			if isImmediate then
+				task.defer(function()
+					onChange(store:getState())
+				end)
+			end
 		end)
 
 	return function()
@@ -112,13 +126,53 @@ local function stateEffect(selector, callback)
 	end
 end
 
+local function onUpdateImmediate(selector, callback)
+	return onUpdate(selector, callback, true)
+end
+
+local function onUpdateOnce(selector, callback)
+	local handle = onUpdate(selector, function(current, previous)
+		handle()
+		callback(current, previous)
+	end)
+
+	return handle
+end
+
+local function onDispatchOnce(type, callback)
+	local handle = onDispatch(type, function(action)
+		handle()
+		callback(action)
+	end)
+
+	return handle
+end
+
+local function waitForUpdate(selector)
+	return Promise.new(function(resolve, _, onCancel)
+		onCancel(onUpdateOnce(selector, resolve))
+	end)
+end
+
+local function waitForDispatch(type)
+	return Promise.new(function(resolve, _, onCancel)
+		onCancel(onDispatchOnce(type, resolve))
+	end)
+end
+
 return {
 	bind = bind,
 	effectMiddleware = effectMiddleware,
 	waitForStore = waitForStore,
+	getStore = getStore,
 	getState = getState,
 	dispatch = dispatch,
 	destruct = destruct,
-	actionEffect = actionEffect,
-	stateEffect = stateEffect,
+	onUpdate = onUpdate,
+	onUpdateImmediate = onUpdateImmediate,
+	onUpdateOnce = onUpdateOnce,
+	waitForUpdate = waitForUpdate,
+	onDispatch = onDispatch,
+	onDispatchOnce = onDispatchOnce,
+	waitForDispatch = waitForDispatch,
 }
