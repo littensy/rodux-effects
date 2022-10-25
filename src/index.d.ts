@@ -142,6 +142,11 @@ export declare function waitForDispatch<T extends Rodux.Action, U extends T["typ
  */
 export declare function onUpdate<T, U>(
 	selector: (state: T) => U,
+	callback: (selectedState: U, lastSelectedState?: U) => void,
+	isImmediate: true,
+): () => void;
+export declare function onUpdate<T, U>(
+	selector: (state: T) => U,
 	callback: (selectedState: U, lastSelectedState: U) => void,
 	isImmediate?: boolean,
 ): () => void;
@@ -173,7 +178,7 @@ export declare function onUpdate<T, U>(
  */
 export declare function onUpdateImmediate<T, U>(
 	selector: (state: T) => U,
-	callback: (selectedState: U, lastSelectedState: U) => void,
+	callback: (selectedState: U, lastSelectedState?: U) => void,
 ): () => void;
 
 /**

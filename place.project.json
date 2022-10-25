@@ -5,19 +5,19 @@
 		"ServerScriptService": {
 			"$className": "ServerScriptService",
 			"Server": {
-				"$path": "build/example/server"
+				"$path": "example/build/example/server"
 			}
 		},
 		"ReplicatedStorage": {
 			"$className": "ReplicatedStorage",
 			"TS": {
-				"$path": "./include",
+				"$path": "example/include",
 				"node_modules": {
 					"$className": "Folder",
 					"@rbxts": {
-						"$path": "../node_modules/@rbxts",
+						"$path": "node_modules/@rbxts",
 						"rodux-effects": {
-							"$path": "build/src"
+							"$path": "example/build/src"
 						}
 					}
 				}

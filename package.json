@@ -5,7 +5,7 @@
   "main": "out/init.lua",
   "scripts": {
     "watch": "rbxtsc -w -p example/tsconfig.json --type=game",
-    "serve": "rojo serve example/default.project.json"
+    "serve": "rojo serve place.project.json"
   },
   "keywords": [],
   "author": "littensy",
