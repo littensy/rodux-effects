@@ -23,7 +23,7 @@ The `effectMiddleware` value is optional, but it's required to use side effects 
 ```ts
 import Rodux from "@rbxts/rodux";
 import { bind, effectMiddleware } from "@rbxts/rodux-effects";
-import rootReducer from "./reducer";
+import rootReducer from "reducers";
 
 const store = new Rodux.Store(rootReducer, undefined, [effectMiddleware]);
 
@@ -37,63 +37,61 @@ See the [example](https://github.com/littensy/rodux-effects/tree/master/example)
 Running a side effect for a selector update is straightforward:
 
 ```ts
-// main.server.ts
-import { stateEffect } from "@rbxts/rodux-effects";
-import { selectCounter } from "./selectors/counter";
+import { onUpdate } from "@rbxts/rodux-effects";
+import { selectCounter } from "reducers/counter";
 
-stateEffect(selectCounter, (counter, prevCounter) => {
-	if (prevCounter === undefined) {
-		print(`Counter started at ${counter}`);
-	} else {
-		const sign = math.sign(counter - prevCounter) === -1 ? "-" : "+";
-		const diff = math.abs(counter - prevCounter);
-		print(`Counter changed to ${counter} (${sign}${diff})`);
-	}
+onUpdate(selectCounter, (counter, prevCounter) => {
+	print(`Counter changed to ${counter} (${counter - prevCounter})`);
 });
 ```
 
-You can also run an effect for a specific action dispatch, though the types need improvement.
+You can also run an effect for a specific action dispatch:
 
 ```ts
-// main.server.ts
-import { actionEffect } from "@rbxts/rodux-effects";
-import { RootAction } from "./reducer";
+import { onDispatch } from "@rbxts/rodux-effects";
+import { RootAction } from "reducers";
 
-actionEffect<RootAction>("CLEAR", () => {
+onDispatch<RootAction>("CLEAR", () => {
 	print("Counter cleared");
 });
 
 // The second generic is a shortcut for extracting the type of the action.
 
-actionEffect<RootAction, "INCREMENT">("INCREMENT", (action) => {
-	print(`Incremented by ${action.payload}`);
+onDispatch<RootAction, "INCREMENT">("INCREMENT", (action) => {
+	print(`Incremented by ${action.amount}`);
 });
 ```
 
 More complex interactions with the store are also possible.
 
 ```ts
-// main.server.ts
-import { dispatch, getState, stateEffect } from "@rbxts/rodux-effects";
-import { setPlayers } from "../actions/players";
-import { selectRoundStatus } from "../selectors/round";
-import { selectPlayers } from "../selectors/players";
-import { spawnPlayers, killPlayers } from "./player-service";
+import { dispatch, getState, onUpdate } from "@rbxts/rodux-effects";
+import { setPlayers, selectPlayers } from "reducers/players";
+import { selectRoundStatus } from "reducers/round";
 
 function onRoundStart() {
-	const players = spawnPlayers();
+	const players = game.GetService("Players").GetPlayers();
+	
+	for (const player of players) {
+		task.defer(() => player.LoadCharacter());
+	}
+	
 	dispatch(setPlayers(players));
 }
 
 function onRoundEnd() {
 	const playersLeft = getState(selectPlayers);
+	
 	for (const player of playersLeft) {
 		print(`Player ${player.name} wins!`);
+		
+		task.defer(() => player.LoadCharacter());
 	}
+	
 	dispatch(setPlayers([]));
 }
 
-stateEffect(selectRoundStatus, (roundStatus) => {
+onUpdate(selectRoundStatus, (roundStatus) => {
 	if (roundStatus === "started") {
 		onRoundStart();
 	} else if (roundStatus === "ended") {
@@ -101,3 +99,15 @@ stateEffect(selectRoundStatus, (roundStatus) => {
 	}
 });
 ```
+
+```ts
+import { dispatch, getState, waitForUpdate } from "@rbxts/rodux-effects";
+import { makeSelectPlayerData } from "reducers/player-data";
+
+function getPlayerData(player: Player) {
+	const selectPlayerData = makeSelectPlayerData(player.UserId);
+	const playerData = getState(selectPlayerData);
+	return playerData ? Promise.resolve(playerData) : waitForUpdate(selectPlayerData);
+}
+```
+
