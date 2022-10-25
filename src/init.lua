@@ -96,10 +96,10 @@ local function onUpdate(selector, callback, isImmediate)
 	local handle
 	local lastSelectedState
 
-	local function onChange(state, force)
+	local function onChange(state)
 		local selectedState = selector(state)
 
-		if selectedState ~= lastSelectedState or force then
+		if selectedState ~= lastSelectedState then
 			task.spawn(callback, selectedState, lastSelectedState)
 			lastSelectedState = selectedState
 		end
@@ -107,13 +107,12 @@ local function onUpdate(selector, callback, isImmediate)
 
 	local promise = waitForStore()
 		:andThen(function(store)
-			lastSelectedState = selector(store:getState())
 			handle = store.changed:connect(onChange)
 
 			if isImmediate then
-				task.defer(function()
-					onChange(store:getState())
-				end)
+				onChange(store:getState())
+			else
+				lastSelectedState = selector(store:getState())
 			end
 		end)
 
