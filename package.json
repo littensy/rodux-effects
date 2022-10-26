@@ -12,9 +12,9 @@
   "license": "MIT",
   "repository": "github:littensy/rodux-effects",
   "bugs": "https://github.com/littensy/rodux-effects/issues",
-  "types": "out/index.d.ts",
+  "types": "src/index.d.ts",
   "files": [
-    "out",
+    "src",
     "!**/*.tsbuildinfo"
   ],
   "publishConfig": {
