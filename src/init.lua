@@ -132,7 +132,8 @@ local function onUpdateImmediate(selector, callback)
 end
 
 local function onUpdateOnce(selector, callback)
-	local handle = onUpdate(selector, function(current, previous)
+	local handle
+	handle = onUpdate(selector, function(current, previous)
 		handle()
 		callback(current, previous)
 	end)
@@ -141,7 +142,8 @@ local function onUpdateOnce(selector, callback)
 end
 
 local function onDispatchOnce(type, callback)
-	local handle = onDispatch(type, function(action)
+	local handle
+	handle = onDispatch(type, function(action)
 		handle()
 		callback(action)
 	end)
