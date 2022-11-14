@@ -105,18 +105,14 @@ local function onUpdate(selector, callback, isImmediate)
 		end
 	end
 
-	local promise = waitForStore()
-		:andThen(function(store)
-			handle = store.changed:connect(onChange)
+	local promise = waitForStore():andThen(function(store)
+		handle = store.changed:connect(onChange)
+		lastSelectedState = selector(store:getState())
 
-			if isImmediate then
-				task.defer(function()
-					onChange(store:getState())
-				end)
-			else
-				lastSelectedState = selector(store:getState())
-			end
-		end)
+		if isImmediate then
+			task.defer(callback, lastSelectedState, nil)
+		end
+	end)
 
 	return function()
 		if handle then
