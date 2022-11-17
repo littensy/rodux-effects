@@ -4,7 +4,6 @@ local Promise = TS.Promise
 local RunService = game:GetService("RunService")
 
 local actionCallbacksByType = {}
-local actionCallbackId = 0
 local currentStore
 
 local function assertStore()
@@ -84,11 +83,13 @@ local function onDispatch(type, callback)
 		actionCallbacksByType[type] = callbacks
 	end
 
-	actionCallbackId += 1
-	callbacks[actionCallbackId] = callback
+	table.insert(callbacks, callback)
 
 	return function()
-		callbacks[actionCallbackId] = nil
+		local index = table.find(callbacks, callback)
+		if index then
+			table.remove(callbacks, index)
+		end
 	end
 end
 
@@ -133,7 +134,6 @@ local function onUpdateOnce(selector, callback)
 		handle()
 		callback(current, previous)
 	end)
-
 	return handle
 end
 
@@ -143,7 +143,6 @@ local function onDispatchOnce(type, callback)
 		handle()
 		callback(action)
 	end)
-
 	return handle
 end
 
